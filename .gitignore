@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 object_detection_tflite/__pycache__
+=======
+data
+__pycache__
+>>>>>>> yolov5-deepsort
