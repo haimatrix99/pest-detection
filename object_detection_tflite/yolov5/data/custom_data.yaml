@@ -1,0 +1,7 @@
+train: /content/drive/MyDrive/pest_detection/data_train/images/train  # train images (relative to 'path') 128 images
+val: /content/drive/MyDrive/pest_detection/data_train/images/val # val images (relative to 'path') 128 images
+
+
+# Classes
+nc:  7 # number of classes
+names: ['bo xit den', 'bo xit xanh', 'buom dem', 'buom hai cham', 'ray lung trang', 'ray nau', 'ray xanh duoi den']  # class names
