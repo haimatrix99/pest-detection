@@ -5,6 +5,7 @@ import cv2
 from PIL import Image
 from imutils.video import FPS
 
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,9 @@ from tflitemodel import TFLiteModel
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("EdgeTPU test runner")
-    parser.add_argument("--model", "-m", type=str, default="assets/best-fp32-v2.tflite", help="weights file")
+    parser.add_argument("--yolov5_model", "-m", type=str, default="assets/best-fp32-v2.tflite", help="weights file")
+    parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
+    parser.add_argument("--config_deepsort", type=str, default="deep_sort/configs/deep_sort.yaml")
     parser.add_argument("--names", "-n", type=str, default="assets/classes.txt", help="classes name file")
     parser.add_argument("--conf-thresh", type=float, default=0.5, help="model confidence threshold")
     parser.add_argument("--iou-thresh", type=float, default=0.45, help="NMS IOU threshold")
@@ -23,8 +26,8 @@ if __name__ == "__main__":
 
     
     args = parser.parse_args()
-    
-    model = TFLiteModel(args.model, args.names, args.conf_thresh, args.iou_thresh)
+        
+    model = TFLiteModel(args.yolov5_model, args.deep_sort_model, args.config_deepsort, args.names, args.conf_thresh, args.iou_thresh)
     
     input_size = model.get_input_size()
 

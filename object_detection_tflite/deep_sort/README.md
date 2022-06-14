@@ -1,141 +1,137 @@
-# Deep SORT
+# Deep Sort with PyTorch
+
+![](demo/demo.gif)
+
+## Update(1-1-2020)
+Changes
+- fix bugs
+- refactor code
+- accerate detection by adding nms on gpu
+
+## Latest Update(07-22)
+Changes
+- bug fix (Thanks @JieChen91 and @yingsen1 for bug reporting).  
+- using batch for feature extracting for each frame, which lead to a small speed up.  
+- code improvement.
+
+Futher improvement direction  
+- Train detector on specific dataset rather than the official one.
+- Retrain REID model on pedestrain dataset for better performance.
+- Replace YOLOv3 detector with advanced ones.
+
+**Any contributions to this repository is welcome!**
+
 
 ## Introduction
-
-This repository contains code for *Simple Online and Realtime Tracking with a Deep Association Metric* (Deep SORT).
-We extend the original [SORT](https://github.com/abewley/sort) algorithm to
-integrate appearance information based on a deep appearance descriptor.
-See the [arXiv preprint](https://arxiv.org/abs/1703.07402) for more information.
+This is an implement of MOT tracking algorithm deep sort. Deep sort is basicly the same with sort but added a CNN model to extract features in image of human part bounded by a detector. This CNN model is indeed a RE-ID model and the detector used in [PAPER](https://arxiv.org/abs/1703.07402) is FasterRCNN , and the original source code is [HERE](https://github.com/nwojke/deep_sort).  
+However in original code, the CNN model is implemented with tensorflow, which I'm not familier with. SO I re-implemented the CNN feature extraction model with PyTorch, and changed the CNN model a little bit. Also, I use **YOLOv3** to generate bboxes instead of FasterRCNN.
 
 ## Dependencies
+- python 3 (python2 not sure)
+- numpy
+- scipy
+- opencv-python
+- sklearn
+- torch >= 0.4
+- torchvision >= 0.1
+- pillow
+- vizer
+- edict
 
-The code is compatible with Python 2.7 and 3. The following dependencies are
-needed to run the tracker:
-
-* NumPy
-* sklearn
-* OpenCV
-
-Additionally, feature generation requires TensorFlow (>= 1.0).
-
-## Installation
-
-First, clone the repository:
+## Quick Start
+0. Check all dependencies installed
+```bash
+pip install -r requirements.txt
 ```
-git clone https://github.com/nwojke/deep_sort.git
+for user in china, you can specify pypi source to accelerate install like:
+```bash
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
-Then, download pre-generated detections and the CNN checkpoint file from
-[here](https://drive.google.com/open?id=18fKzfqnqhqW3s9zwsCbnVJ5XF2JFeqMp).
 
-*NOTE:* The candidate object locations of our pre-generated detections are
-taken from the following paper:
+1. Clone this repository
 ```
-F. Yu, W. Li, Q. Li, Y. Liu, X. Shi, J. Yan. POI: Multiple Object Tracking with
-High Performance Detection and Appearance Feature. In BMTT, SenseTime Group
-Limited, 2016.
+git clone git@github.com:ZQPei/deep_sort_pytorch.git
 ```
-We have replaced the appearance descriptor with a custom deep convolutional
-neural network (see below).
 
-## Running the tracker
-
-The following example starts the tracker on one of the
-[MOT16 benchmark](https://motchallenge.net/data/MOT16/)
-sequences.
-We assume resources have been extracted to the repository root directory and
-the MOT16 benchmark data is in `./MOT16`:
+2. Download YOLOv3 parameters
 ```
-python deep_sort_app.py \
-    --sequence_dir=./MOT16/test/MOT16-06 \
-    --detection_file=./resources/detections/MOT16_POI_test/MOT16-06.npy \
-    --min_confidence=0.3 \
-    --nn_budget=100 \
-    --display=True
+cd detector/YOLOv3/weight/
+wget https://pjreddie.com/media/files/yolov3.weights
+wget https://pjreddie.com/media/files/yolov3-tiny.weights
+cd ../../../
 ```
-Check `python deep_sort_app.py -h` for an overview of available options.
-There are also scripts in the repository to visualize results, generate videos,
-and evaluate the MOT challenge benchmark.
 
-## Generating detections
-
-Beside the main tracking application, this repository contains a script to
-generate features for person re-identification, suitable to compare the visual
-appearance of pedestrian bounding boxes using cosine similarity.
-The following example generates these features from standard MOT challenge
-detections. Again, we assume resources have been extracted to the repository
-root directory and MOT16 data is in `./MOT16`:
+3. Download deepsort parameters ckpt.t7
 ```
-python tools/generate_detections.py \
-    --model=resources/networks/mars-small128.pb \
-    --mot_dir=./MOT16/train \
-    --output_dir=./resources/detections/MOT16_train
+cd deep_sort/deep/checkpoint
+# download ckpt.t7 from
+https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6 to this folder
+cd ../../../
+```  
+
+4. Compile nms module
+```bash
+cd detector/YOLOv3/nms
+sh build.sh
+cd ../../..
 ```
-The model has been generated with TensorFlow 1.5. If you run into
-incompatibility, re-export the frozen inference graph to obtain a new
-`mars-small128.pb` that is compatible with your version:
+
+Notice:
+If compiling failed, the simplist way is to **Upgrade your pytorch >= 1.1 and torchvision >= 0.3" and you can avoid the troublesome compiling problems which are most likely caused by either `gcc version too low` or `libraries missing`.
+
+5. Run demo
 ```
-python tools/freeze_model.py
+usage: python yolov3_deepsort.py VIDEO_PATH
+                                [--help]
+                                [--frame_interval FRAME_INTERVAL]
+                                [--config_detection CONFIG_DETECTION]
+                                [--config_deepsort CONFIG_DEEPSORT]
+                                [--display]
+                                [--display_width DISPLAY_WIDTH]
+                                [--display_height DISPLAY_HEIGHT]
+                                [--save_path SAVE_PATH]          
+                                [--cpu]          
+
+# yolov3 + deepsort
+python yolov3_deepsort.py [VIDEO_PATH]
+
+# yolov3_tiny + deepsort
+python yolov3_deepsort.py [VIDEO_PATH] --config_detection ./configs/yolov3_tiny.yaml
+
+# yolov3 + deepsort on webcam
+python3 yolov3_deepsort.py /dev/video0 --camera 0
+
+# yolov3_tiny + deepsort on webcam
+python3 yolov3_deepsort.py /dev/video0 --config_detection ./configs/yolov3_tiny.yaml --camera 0
 ```
-The ``generate_detections.py`` stores for each sequence of the MOT16 dataset
-a separate binary file in NumPy native format. Each file contains an array of
-shape `Nx138`, where N is the number of detections in the corresponding MOT
-sequence. The first 10 columns of this array contain the raw MOT detection
-copied over from the input file. The remaining 128 columns store the appearance
-descriptor. The files generated by this command can be used as input for the
-`deep_sort_app.py`.
+Use `--display` to enable display.  
+Results will be saved to `./output/results.avi` and `./output/results.txt`.
 
-**NOTE**: If ``python tools/generate_detections.py`` raises a TensorFlow error,
-try passing an absolute path to the ``--model`` argument. This might help in
-some cases.
+All files above can also be accessed from BaiduDisk!  
+linker：[BaiduDisk](https://pan.baidu.com/s/1YJ1iPpdFTlUyLFoonYvozg)
+passwd：fbuw
 
-## Training the model
+## Training the RE-ID model
+The original model used in paper is in original_model.py, and its parameter here [original_ckpt.t7](https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6).  
 
-To train the deep association metric model we used a novel [cosine metric learning](https://github.com/nwojke/cosine_metric_learning) approach which is provided as a separate repository.
+To train the model, first you need download [Market1501](http://www.liangzheng.com.cn/Project/project_reid.html) dataset or [Mars](http://www.liangzheng.com.cn/Project/project_mars.html) dataset.  
 
-## Highlevel overview of source files
+Then you can try [train.py](deep_sort/deep/train.py) to train your own parameter and evaluate it using [test.py](deep_sort/deep/test.py) and [evaluate.py](deep_sort/deep/evalute.py).
+![train.jpg](deep_sort/deep/train.jpg)
 
-In the top-level directory are executable scripts to execute, evaluate, and
-visualize the tracker. The main entry point is in `deep_sort_app.py`.
-This file runs the tracker on a MOTChallenge sequence.
+## Demo videos and images
+[demo.avi](https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6)
+[demo2.avi](https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6)
 
-In package `deep_sort` is the main tracking code:
+![1.jpg](demo/1.jpg)
+![2.jpg](demo/2.jpg)
 
-* `detection.py`: Detection base class.
-* `kalman_filter.py`: A Kalman filter implementation and concrete
-   parametrization for image space filtering.
-* `linear_assignment.py`: This module contains code for min cost matching and
-   the matching cascade.
-* `iou_matching.py`: This module contains the IOU matching metric.
-* `nn_matching.py`: A module for a nearest neighbor matching metric.
-* `track.py`: The track class contains single-target track data such as Kalman
-  state, number of hits, misses, hit streak, associated feature vectors, etc.
-* `tracker.py`: This is the multi-target tracker class.
 
-The `deep_sort_app.py` expects detections in a custom format, stored in .npy
-files. These can be computed from MOTChallenge detections using
-`generate_detections.py`. We also provide
-[pre-generated detections](https://drive.google.com/open?id=1VVqtL0klSUvLnmBKS89il1EKC3IxUBVK).
+## References
+- paper: [Simple Online and Realtime Tracking with a Deep Association Metric](https://arxiv.org/abs/1703.07402)
 
-## Citing DeepSORT
+- code: [nwojke/deep_sort](https://github.com/nwojke/deep_sort)
 
-If you find this repo useful in your research, please consider citing the following papers:
+- paper: [YOLOv3](https://pjreddie.com/media/files/papers/YOLOv3.pdf)
 
-    @inproceedings{Wojke2017simple,
-      title={Simple Online and Realtime Tracking with a Deep Association Metric},
-      author={Wojke, Nicolai and Bewley, Alex and Paulus, Dietrich},
-      booktitle={2017 IEEE International Conference on Image Processing (ICIP)},
-      year={2017},
-      pages={3645--3649},
-      organization={IEEE},
-      doi={10.1109/ICIP.2017.8296962}
-    }
-
-    @inproceedings{Wojke2018deep,
-      title={Deep Cosine Metric Learning for Person Re-identification},
-      author={Wojke, Nicolai and Bewley, Alex},
-      booktitle={2018 IEEE Winter Conference on Applications of Computer Vision (WACV)},
-      year={2018},
-      pages={748--756},
-      organization={IEEE},
-      doi={10.1109/WACV.2018.00087}
-    }
+- code: [Joseph Redmon/yolov3](https://pjreddie.com/darknet/yolo/)
