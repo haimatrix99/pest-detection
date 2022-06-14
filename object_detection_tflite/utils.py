@@ -58,7 +58,7 @@ def resize_and_pad(image, desired_size):
     new_im = cv2.copyMakeBorder(image, 0, delta_h, 0, delta_w, cv2.BORDER_CONSTANT,
         value=color)
         
-    return new_im, co
+    return new_im, pad
      
 def get_image_tensor(img, max_size):
     """
