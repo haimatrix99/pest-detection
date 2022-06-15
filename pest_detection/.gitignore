@@ -8,7 +8,6 @@ __pycache__/
 *$py.class
 runs/
 data/videos/*.mp4
-assets/
 # C extensions
 *.so
 
