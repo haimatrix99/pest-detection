@@ -225,7 +225,6 @@ class LoadImages:
         # Convert
         img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
         img = np.ascontiguousarray(img)
-
         return path, img, img0, self.cap, s
 
     def new_video(self, path):
@@ -334,6 +333,7 @@ class LoadStreams:
                 success, im = cap.retrieve()
                 if success:
                     self.imgs[i] = im
+                    
                 else:
                     LOGGER.warning('WARNING: Video stream unresponsive, please check your IP camera connection.')
                     self.imgs[i] = np.zeros_like(self.imgs[i])
@@ -353,7 +353,7 @@ class LoadStreams:
         # Letterbox
         img0 = self.imgs.copy()
         img = [letterbox(x, self.img_size, stride=self.stride, auto=self.rect and self.auto)[0] for x in img0]
-
+    
         # Stack
         img = np.stack(img, 0)
 
@@ -361,10 +361,13 @@ class LoadStreams:
         img = img[..., ::-1].transpose((0, 3, 1, 2))  # BGR to RGB, BHWC to BCHW
         img = np.ascontiguousarray(img)
 
+
         return self.sources, img, img0, None, ''
 
     def __len__(self):
         return len(self.sources)  # 1E12 frames = 32 streams at 30 FPS for 30 years
+    
+    
 
 
 def img2label_paths(img_paths):

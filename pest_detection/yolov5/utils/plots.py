@@ -77,10 +77,10 @@ class Annotator:
             self.im = im if isinstance(im, Image.Image) else Image.fromarray(im)
             self.draw = ImageDraw.Draw(self.im)
             self.font = check_font(font='Arial.Unicode.ttf' if is_chinese(example) else font,
-                                   size=font_size or max(round(sum(self.im.size) / 2 * 0.035), 12))
+                                   size= font_size or max(round(sum(self.im.size) / 5 * 0.035), 12))
         else:  # use cv2
             self.im = im
-        self.lw = line_width or max(round(sum(im.shape) / 2 * 0.003), 2)  # line width
+        self.lw = line_width or max(round(sum(im.shape) / 5 * 0.003), 2)  # line width
 
     def box_label(self, box, label='', color=(128, 128, 128), txt_color=(255, 255, 255)):
         # Add one xyxy box to image with label
@@ -99,7 +99,6 @@ class Annotator:
             p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
             center_coordinates = (int(box[0] + (box[2]-box[0])/2), int(box[1] + (box[3]-box[1])/2))
             cv2.rectangle(self.im, p1, p2, color, thickness=self.lw, lineType=cv2.LINE_AA)
-            cv2.circle(self.im, center_coordinates, radius=5, color=color, thickness=3) 
             if label:
                 tf = max(self.lw - 1, 1)  # font thickness
                 w, h = cv2.getTextSize(label, 0, fontScale=self.lw / 3, thickness=tf)[0]  # text width, height
