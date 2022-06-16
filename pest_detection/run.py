@@ -1,7 +1,6 @@
 # limit the number of cpus used by high performance libraries
 import os
 
-
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -57,8 +56,6 @@ def detect(opt):
         source = check_file(source)
     # Initialize
     device = select_device(opt.device)
-    # Directories
-    save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
     # Load model
     model = DetectMultiBackend(yolo_model, device=device, dnn=opt.dnn)
     stride, names, pt, jit, _ = model.stride, model.names, model.pt, model.jit, model.onnx
@@ -114,12 +111,15 @@ def detect(opt):
 
             p = Path(p)  # to Path
             s += ' Input size: %gx%g\n' % img.shape[2:]  # print string
+            
             annotator = Annotator(im0, pil=not ascii)
             w, h = im0.shape[1],im0.shape[0]
+            
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(
                     img.shape[2:], det[:, :4], im0.shape).round()
+                
                 s += "Object detections: "
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
@@ -170,6 +170,7 @@ def detect(opt):
     
             # Save results (image with detections)
             if save:
+                save_dir = increment_path(Path(project) / "image" if dataset.mode == 'image' else "video", exist_ok=exist_ok)  # increment run
                 save_dir.mkdir(parents=True, exist_ok=True)  # make dir
                 save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
                 if dataset.mode == 'image' and opt.track is False:
