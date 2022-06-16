@@ -125,7 +125,7 @@ def detect(opt):
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}" if c == det[:, -1].unique()[-1] else f"{n} {names[int(c)]}, "# add to string
                    
-                if opt.track:
+                if opt.track and dataset.mode != 'image':
                     xywhs = xyxy2xywh(det[:, 0:4])
                     confs = det[:, 4]
                     clss = det[:, 5]
@@ -151,14 +151,14 @@ def detect(opt):
                     LOGGER.info(f'{s}\nInference time: YOLO: {t3 - t2:.3f}s')
                     
             else:
-                if opt.track:
+                if opt.track and dataset.mode != 'image':
                     deepsort.increment_ages()
-                LOGGER.info('\nNo detections')
+                LOGGER.info('No detections')
 
             # Stream results
             im0 = annotator.result()
             if show:
-                if dataset.mode == 'image':
+                if dataset.mode == 'image' and opt.track is False:
                     cv2.imshow(str(p), im0)
                     cv2.waitKey(0)
                 else:
@@ -172,7 +172,7 @@ def detect(opt):
             if save:
                 save_dir.mkdir(parents=True, exist_ok=True)  # make dir
                 save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
-                if dataset.mode == 'image':
+                if dataset.mode == 'image' and opt.track is False:
                     cv2.imwrite(save_path, im0)
                 else:
                     if vid_path != save_path:  # new video
