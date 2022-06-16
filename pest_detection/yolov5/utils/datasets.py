@@ -210,14 +210,14 @@ class LoadImages:
                     ret_val, img0 = self.cap.read()
 
             self.frame += 1
-            s = f'video {self.count + 1}/{self.nf} ({self.frame}/{self.frames}) {path}: '
+            s = f'Video {self.count + 1}/{self.nf} ({self.frame}/{self.frames}) {os.path.basename(path)} '
 
         else:
             # Read image
             self.count += 1
             img0 = cv2.imread(path)  # BGR
             assert img0 is not None, f'Image Not Found {path}'
-            s = f'image {self.count}/{self.nf} {path}: '
+            s = f'Image {self.count}/{self.nf} {os.path.basename(path)}: '
 
         # Padded resize
         img = letterbox(img0, self.img_size, stride=self.stride, auto=self.auto)[0]

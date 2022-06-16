@@ -37,13 +37,14 @@ def detect(opt):
         opt.source, opt.yolo_model, opt.show_vid, opt.save_vid, \
         opt.imgsz, opt.project, opt.name, opt.exist_ok
 
-    cfg = get_config()
-    cfg.merge_from_file(opt.config_deepsort)
-    deepsort = DeepSort(opt.deep_sort_model,
-        max_dist=cfg.DEEPSORT.MAX_DIST,
-        max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
-        max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
-        use_cuda=True)
+    if opt.track:
+        cfg = get_config()
+        cfg.merge_from_file(opt.config_deepsort)
+        deepsort = DeepSort(opt.deep_sort_model,
+            max_dist=cfg.DEEPSORT.MAX_DIST,
+            max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
+            max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
+            use_cuda=True)
     webcam = source == '0' or source.startswith(
         'rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -100,22 +101,22 @@ def detect(opt):
             seen += 1
             if webcam:  # batch_size >= 1
                 p, im0, _ = path[i], im0s[i].copy(), dataset.count
-                s += f'{i}: '
+                s += f'{i}'
             else:
                 p, im0, _ = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            s += '%gx%g ' % img.shape[2:]  # print string
+            s += ' Input size: %gx%g\n' % img.shape[2:]  # print string
             annotator = Annotator(im0, pil=not ascii)
             w, h = im0.shape[1],im0.shape[0]
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(
                     img.shape[2:], det[:, :4], im0.shape).round()
-
+                s += "Object detections: "
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
-                    s += f"{n} {names[int(c)]}, "  # add to string
+                    s += f"{n} {names[int(c)]}" if c == det[:, -1].unique()[-1] else f"{n} {names[int(c)]}, "# add to string
                 
                     
                 if opt.track:
@@ -135,18 +136,18 @@ def detect(opt):
                             c = int(cls)  # integer class
                             label = f'{id} {names[c]}'
                             annotator.box_label(bboxes, label, color=colors(c, True))
-                    LOGGER.info(f'{s}Done. YOLO: {t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
+                    LOGGER.info(f'{s}\nInference time: YOLO: {t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
                 else:
                     for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
                         label =f'{names[c]}'
                         annotator.box_label(xyxy, label, color=colors(c, True))
-                    LOGGER.info(f'{s}Done. YOLO: {t3 - t2:.3f}s')
+                    LOGGER.info(f'{s}\nInference time: YOLO: {t3 - t2:.3f}s')
                     
             else:
                 if opt.track:
                     deepsort.increment_ages()
-                LOGGER.info('No detections')
+                LOGGER.info('\nNo detections')
 
             # Stream results
             im0 = annotator.result()
@@ -196,7 +197,6 @@ if __name__ == '__main__':
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 16 17')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
-    parser.add_argument('--visualize', action='store_true', help='visualize features')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detection per image')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
     parser.add_argument('--project', default=ROOT / 'runs/detect', help='save results to project/name')
