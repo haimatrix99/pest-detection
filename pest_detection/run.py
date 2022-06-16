@@ -1,5 +1,7 @@
 # limit the number of cpus used by high performance libraries
 import os
+
+
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -17,8 +19,8 @@ import torch
 import torch.backends.cudnn as cudnn
 
 from yolov5.models.common import DetectMultiBackend
-from yolov5.utils.datasets import LoadImages, LoadStreams
-from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
+from yolov5.utils.datasets import LoadImages, LoadStreams, IMG_FORMATS, VID_FORMATS
+from yolov5.utils.general import (LOGGER, check_img_size, check_file, non_max_suppression, scale_coords, 
                                 xyxy2xywh, increment_path)
 from yolov5.utils.torch_utils import select_device, time_sync
 from yolov5.utils.plots import Annotator, colors
@@ -33,8 +35,8 @@ if str(ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 def detect(opt):
-    source, yolo_model, show_vid, save_vid, imgsz, project, name, exist_ok= \
-        opt.source, opt.yolo_model, opt.show_vid, opt.save_vid, \
+    source, yolo_model, show, save, imgsz, project, name, exist_ok= \
+        opt.source, opt.yolo_model, opt.show, opt.save, \
         opt.imgsz, opt.project, opt.name, opt.exist_ok
 
     if opt.track:
@@ -45,9 +47,14 @@ def detect(opt):
             max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
             max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
             use_cuda=True)
+        
+    is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
+    
     webcam = source == '0' or source.startswith(
         'rtsp') or source.startswith('http') or source.endswith('.txt')
 
+    if is_file:
+        source = check_file(source)
     # Initialize
     device = select_device(opt.device)
     # Directories
@@ -117,8 +124,7 @@ def detect(opt):
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}" if c == det[:, -1].unique()[-1] else f"{n} {names[int(c)]}, "# add to string
-                
-                    
+                   
                 if opt.track:
                     xywhs = xyxy2xywh(det[:, 0:4])
                     confs = det[:, 4]
@@ -151,33 +157,42 @@ def detect(opt):
 
             # Stream results
             im0 = annotator.result()
-            if show_vid:
-                cv2.imshow(str(p), im0)
-                if cv2.waitKey(1) == ord('q'):  # q to quit
-                    t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
-                    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort tracking {(1, 3, *imgsz)}' % t)
-                    sys.exit()
-
+            if show:
+                if dataset.mode == 'image':
+                    cv2.imshow(str(p), im0)
+                    cv2.waitKey(0)
+                else:
+                    cv2.imshow(str(p), im0)
+                    if cv2.waitKey(1) == ord('q'):  # q to quit
+                        t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
+                        LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort tracking {(1, 3, *imgsz)}' % t)
+                        sys.exit()
+    
             # Save results (image with detections)
-            if save_vid:
+            if save:
                 save_dir.mkdir(parents=True, exist_ok=True)  # make dir
                 save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
-                if vid_path != save_path:  # new video
-                    vid_path = save_path
-                    if isinstance(vid_writer, cv2.VideoWriter):
-                        vid_writer.release()  # release previous video writer
-                    if vid_cap:  # video
-                        fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    else:  # stream
-                        fps, w, h = 30, im0.shape[1], im0.shape[0]
-                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), 10, (w, h))
-                    
-                vid_writer.write(im0)
-    t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
-    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort update {(1, 3, *imgsz)}' % t)
-    if save_vid:
+                if dataset.mode == 'image':
+                    cv2.imwrite(save_path, im0)
+                else:
+                    if vid_path != save_path:  # new video
+                        vid_path = save_path
+                        if isinstance(vid_writer, cv2.VideoWriter):
+                            vid_writer.release()  # release previous video writer
+                        if vid_cap:  # video
+                            fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                            w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                            h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        else:  # stream
+                            fps, w, h = 30, im0.shape[1], im0.shape[0]
+                        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), 10, (w, h))
+                        
+                    vid_writer.write(im0)
+    if not is_file:
+        t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
+        LOGGER.info(f'FPS: {1000/sum(t):.1f}')
+        LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort update {(1, 3, *imgsz)}' % t)
+    if save:
         print('Results saved to %s' % save_path)
 
 
@@ -192,8 +207,8 @@ if __name__ == '__main__':
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--show-vid', action='store_true', help='display tracking video results')
-    parser.add_argument('--save-vid', action='store_true', help='save video tracking results')
+    parser.add_argument('--show', action='store_true', help='display tracking video results')
+    parser.add_argument('--save', action='store_true', help='save video tracking results')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 16 17')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
