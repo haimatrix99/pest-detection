@@ -36,15 +36,14 @@ def detect(opt):
     source, yolo_model, show_vid, save_vid, imgsz, project, name, exist_ok= \
         opt.source, opt.yolo_model, opt.show_vid, opt.save_vid, \
         opt.imgsz, opt.project, opt.name, opt.exist_ok
-    
+
     cfg = get_config()
     cfg.merge_from_file(opt.config_deepsort)
     deepsort = DeepSort(opt.deep_sort_model,
-                        max_dist=cfg.DEEPSORT.MAX_DIST,
-                        max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
-                        max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
-                        use_cuda=True)
-    
+        max_dist=cfg.DEEPSORT.MAX_DIST,
+        max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
+        max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
+        use_cuda=True)
     webcam = source == '0' or source.startswith(
         'rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -117,29 +116,36 @@ def detect(opt):
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}, "  # add to string
+                
                     
-                xywhs = xyxy2xywh(det[:, 0:4])
-                confs = det[:, 4]
-                clss = det[:, 5]
+                if opt.track:
+                    xywhs = xyxy2xywh(det[:, 0:4])
+                    confs = det[:, 4]
+                    clss = det[:, 5]
+                    t4 = time_sync()
+                    outputs = deepsort.update(xywhs.cpu(), confs.cpu(), clss.cpu(), im0)
+                    t5 = time_sync()
+                    dt[3] += t5 - t4
                 
-                t4 = time_sync()
-                outputs = deepsort.update(xywhs.cpu(), confs.cpu(), clss.cpu(), im0)
-                t5 = time_sync()
-                dt[3] += t5 - t4
-                
-                if len(outputs) > 0:
-                    for j, (output, conf) in enumerate(zip(outputs, confs)):
-                        bboxes = output[0:4]
-                        id = output[4]
-                        cls = output[5]
-                        #count
+                    if len(outputs) > 0:
+                        for j, (output, conf) in enumerate(zip(outputs, confs)):
+                            bboxes = output[0:4]
+                            id = output[4]
+                            cls = output[5]
+                            c = int(cls)  # integer class
+                            label = f'{id} {names[c]}'
+                            annotator.box_label(bboxes, label, color=colors(c, True))
+                    LOGGER.info(f'{s}Done. YOLO: {t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
+                else:
+                    for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
-                        label = f'{id} {names[c]}'
-                        annotator.box_label(bboxes, label, color=colors(c, True))
-                        
-                LOGGER.info(f'{s}Done. YOLO: {t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
+                        label =f'{names[c]}'
+                        annotator.box_label(xyxy, label, color=colors(c, True))
+                    LOGGER.info(f'{s}Done. YOLO: {t3 - t2:.3f}s')
+                    
             else:
-                deepsort.increment_ages()
+                if opt.track:
+                    deepsort.increment_ages()
                 LOGGER.info('No detections')
 
             # Stream results
@@ -148,7 +154,7 @@ def detect(opt):
                 cv2.imshow(str(p), im0)
                 if cv2.waitKey(1) == ord('q'):  # q to quit
                     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
-                    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort update {(1, 3, *imgsz)}' % t)
+                    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort tracking {(1, 3, *imgsz)}' % t)
                     sys.exit()
 
             # Save results (image with detections)
@@ -177,8 +183,9 @@ def detect(opt):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo_model', nargs='+', type=str, default='assets/model-v2.pt', help='model.pt path(s)')
+    parser.add_argument('--track', action='store_true', help='turn on and off tracking model')
     parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
-    parser.add_argument("--config_deepsort", type=str, default="deep_sort/configs/deep_sort.yaml")
+    parser.add_argument('--config_deepsort', type=str, default="deep_sort/configs/deep_sort.yaml")
     parser.add_argument('--source', type=str, default='data/videos/VID1.mp4', help='source')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
