@@ -6,7 +6,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+pest_detection/runs/
+pest_detection/data/videos/*.mp4
 # C extensions
 *.so
 
