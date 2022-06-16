@@ -120,7 +120,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     int currentDeviceImage = -1;
     int currentModelImage = -1;
     int currentNumThreadsImage = -1;
-    Bitmap bitmap = null;
+    Bitmap bitmapImage = null;
+    Bitmap croppedBitmapImage = null;
 
     public void OnOpenImageButtonClick(View view){
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -138,10 +139,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         
         ImageView imageView = findViewById(R.id.imageView2);
 
-        Bitmap workingBitmap = Bitmap.createBitmap(bitmap);
-        Bitmap mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        Bitmap mutableBitmap = croppedBitmapImage.copy(Bitmap.Config.ARGB_8888, true);
 
-        final List<Classifier.Recognition> results = detector.recognizeImage(bitmap);
+        final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmapImage);
         final Canvas canvas = new Canvas(mutableBitmap);
         final Paint paint = new Paint();
         paint.setStyle(Style.STROKE);
@@ -181,7 +181,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                         ArrayList<String> deviceStringsImage = new ArrayList<String>();
 
-                        bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                        bitmapImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
 
                         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -290,7 +290,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         minusImageViewImage.setOnClickListener(this);
 
                         ImageView imageView = findViewById(R.id.imageView2);
-                        imageView.setImageBitmap(bitmap);
+                        int cropSize = detector.getInputSize();
+                        croppedBitmapImage = Bitmap.createScaledBitmap(bitmapImage, cropSize, cropSize, true);
+                        imageView.setImageBitmap(croppedBitmapImage);
                     }
                     catch (IOException e) {
                         e.printStackTrace();

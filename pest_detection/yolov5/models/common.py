@@ -295,7 +295,7 @@ class DetectMultiBackend(nn.Module):
         suffixes = ['.pt', '.torchscript', '.onnx', '.engine', '.tflite', '.pb', '', '.mlmodel']
         check_suffix(w, suffixes)  # check weights have acceptable suffix
         pt, jit, onnx, engine, tflite, pb, saved_model, coreml = (suffix == x for x in suffixes)  # backend booleans
-        stride, names = 64, [f'class{i}' for i in range(1000)]  # assign defaults
+        stride, names = 32, [f'class{i}' for i in range(1000)]  # assign defaults
         w = attempt_download(w)  # download if not local
 
         if jit:  # TorchScript
@@ -501,7 +501,8 @@ class AutoShape(nn.Module):
             shape0.append(s)  # image shape
             g = (size / max(s))  # gain
             shape1.append([y * g for y in s])
-            imgs[i] = im if im.data.contiguous else np.ascontiguousarray(im)  # update
+            imgs[i] = im if im.data.contiguous else np.ascontiguousarray(im)
+            # update
         shape1 = [make_divisible(x, self.stride) for x in np.stack(shape1, 0).max(0)]  # inference shape
         x = [letterbox(im, new_shape=shape1 if self.pt else size, auto=False)[0] for im in imgs]  # pad
         x = np.stack(x, 0) if n > 1 else x[0][None]  # stack

@@ -75,7 +75,7 @@ public class MultiBoxTracker {
 
     boxPaint.setColor(Color.RED);
     boxPaint.setStyle(Style.STROKE);
-    boxPaint.setStrokeWidth(2.0f);
+    boxPaint.setStrokeWidth(4.0f);
     boxPaint.setStrokeCap(Cap.ROUND);
     boxPaint.setStrokeJoin(Join.ROUND);
     boxPaint.setStrokeMiter(100);
@@ -83,7 +83,7 @@ public class MultiBoxTracker {
     textSizePx =
             TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, context.getResources().getDisplayMetrics());
-    borderedText = new BorderedText(textSizePx);
+    borderedText = new BorderedText(30.0f);
   }
 
   public synchronized void setFrameConfiguration(
@@ -145,12 +145,14 @@ public class MultiBoxTracker {
 
       final String labelString =
               !TextUtils.isEmpty(recognition.title)
-                      ? String.format("%s %.2f", recognition.title, (100 * recognition.detectionConfidence))
+                      ? String.format("%s", recognition.title)
                       : String.format("%.2f", (100 * recognition.detectionConfidence));
       //            borderedText.drawText(canvas, trackedPos.left + cornerSize, trackedPos.top,
       // labelString);
-//      borderedText.drawText(
-//              canvas, trackedPos.left + cornerSize, trackedPos.top, labelString + "%", boxPaint);
+      borderedText.setInteriorColor(recognition.color);
+      borderedText.setExteriorColor(recognition.color);
+      borderedText.drawText(
+              canvas, trackedPos.left - 30.0f, trackedPos.top - 30.0f, labelString, boxPaint);
     }
   }
 

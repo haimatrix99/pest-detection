@@ -44,16 +44,14 @@ def detect(opt):
                         max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
                         max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
                         use_cuda=True)
+    
     webcam = source == '0' or source.startswith(
         'rtsp') or source.startswith('http') or source.endswith('.txt')
 
     # Initialize
     device = select_device(opt.device)
-
     # Directories
     save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
-    save_dir.mkdir(parents=True, exist_ok=True)  # make dir
-
     # Load model
     model = DetectMultiBackend(yolo_model, device=device, dnn=opt.dnn)
     stride, names, pt, jit, _ = model.stride, model.names, model.pt, model.jit, model.onnx
@@ -89,8 +87,8 @@ def detect(opt):
         dt[0] += t2 - t1
 
         # Inference
-        visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if opt.visualize else False
-        pred = model(img, augment=opt.augment, visualize=visualize)
+
+        pred = model(img, augment=opt.augment)
         t3 = time_sync()
         dt[1] += t3 - t2
 
@@ -108,7 +106,6 @@ def detect(opt):
                 p, im0, _ = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
             s += '%gx%g ' % img.shape[2:]  # print string
             annotator = Annotator(im0, pil=not ascii)
             w, h = im0.shape[1],im0.shape[0]
@@ -139,11 +136,12 @@ def detect(opt):
                         c = int(cls)  # integer class
                         label = f'{id} {names[c]}'
                         annotator.box_label(bboxes, label, color=colors(c, True))
+                        
+                LOGGER.info(f'{s}Done. YOLO: {t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
             else:
                 deepsort.increment_ages()
                 LOGGER.info('No detections')
 
-            LOGGER.info(f'{s}Done. YOLO: {t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
             # Stream results
             im0 = annotator.result()
             if show_vid:
@@ -151,10 +149,12 @@ def detect(opt):
                 if cv2.waitKey(1) == ord('q'):  # q to quit
                     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
                     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort update {(1, 3, *imgsz)}' % t)
-                    raise StopIteration
+                    sys.exit()
 
             # Save results (image with detections)
             if save_vid:
+                save_dir.mkdir(parents=True, exist_ok=True)  # make dir
+                save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
                 if vid_path != save_path:  # new video
                     vid_path = save_path
                     if isinstance(vid_writer, cv2.VideoWriter):
@@ -165,8 +165,8 @@ def detect(opt):
                         h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                     else:  # stream
                         fps, w, h = 30, im0.shape[1], im0.shape[0]
-
-                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), 10, (w, h))
+                    
                 vid_writer.write(im0)
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort update {(1, 3, *imgsz)}' % t)
