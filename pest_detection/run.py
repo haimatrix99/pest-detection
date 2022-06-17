@@ -34,9 +34,9 @@ if str(ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 def detect(opt):
-    source, yolo_model, show, save, imgsz, project, name, exist_ok= \
+    source, yolo_model, show, save, imgsz, project, exist_ok= \
         opt.source, opt.yolo_model, opt.show, opt.save, \
-        opt.imgsz, opt.project, opt.name, opt.exist_ok
+        opt.imgsz, opt.project, opt.exist_ok
 
     if opt.track:
         cfg = get_config()
@@ -59,6 +59,7 @@ def detect(opt):
     # Load model
     model = DetectMultiBackend(yolo_model, device=device, dnn=opt.dnn)
     stride, names, pt, jit, _ = model.stride, model.names, model.pt, model.jit, model.onnx
+    imgsz *= 2 if len(imgsz) == 1 else 1  # expand
     imgsz = check_img_size(imgsz, s=stride)  # check image size
 
     # Set Dataloader
@@ -219,7 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     opt = parser.parse_args()
-    opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
+
 
     with torch.no_grad():
         detect(opt)
