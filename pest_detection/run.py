@@ -189,7 +189,7 @@ def detect(opt):
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), 10, (w, h))
                         
                     vid_writer.write(im0)
-    if not is_file:
+    if dataset.mode == 'video':
         t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
         LOGGER.info(f'FPS: {1000/sum(t):.1f}')
         LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape, %.1fms deep sort update {(1, 3, *imgsz)}' % t)
@@ -200,9 +200,9 @@ def detect(opt):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo_model', nargs='+', type=str, default='assets/model-v2.pt', help='model.pt path(s)')
-    parser.add_argument('--track', action='store_true', help='turn on and off tracking model')
     parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
     parser.add_argument('--config_deepsort', type=str, default="deep_sort/configs/deep_sort.yaml")
+    parser.add_argument('--track', action='store_true', help='turn on and off tracking model')
     parser.add_argument('--source', type=str, default='data/videos/VID1.mp4', help='source')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
