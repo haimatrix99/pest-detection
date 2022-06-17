@@ -1,11 +1,11 @@
 FROM python:3.7-slim
 
-RUN pip install -U pip
-RUN pip install -r yolov5/requirements.txt
-
 RUN mkdir app
 
 ADD . ./app
+
+RUN pip install -U pip
+RUN pip install -r yolov5/requirements.txt
 
 # Expose the port
 EXPOSE 80
