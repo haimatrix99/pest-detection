@@ -1,3 +1,7 @@
 {
-    "explorer.compactFolders": false
+    "explorer.compactFolders": false,
+    "azure-iot-edge.defaultPlatform": {
+        "platform": "amd64",
+        "alias": null
+    }
 }
