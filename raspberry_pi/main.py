@@ -16,7 +16,6 @@ import time
 
 from azure.iot.device import IoTHubModuleClient, Message
 
-import StreamImage
 from StreamImage import StreamImage
 
 
@@ -80,17 +79,16 @@ def main(
     :param bool annotate: when showing the video in a window, it will annotate the frames with rectangles given by the image processing service. False by default. Optional. Rectangles should be passed in a json blob with a key containing the string rectangle, and a top left corner + bottom right corner or top left corner with width and height.
     '''
     try:
-        print("\nPython %s\n" % sys.version)
-        print("Camera Capture Azure IoT Edge Module. Press Ctrl-C to exit.")
-        try:
-            global hubManager
-            hubManager = HubManager(
-                10000, verbose)
-        except Exception as iothub_error:
-            print("Unexpected error %s from IoTHub" % iothub_error)
-            return
-        with StreamImage(imageDir, imageProcessingEndpoint, imageProcessingParams, showImage, verbose, resizeWidth, resizeHeight, annotate, send_to_Hub_callback) as streamImage:
-            streamImage.start()
+        print("Stream Image Azure IoT Edge Module. Press Ctrl-C to exit.")
+        # try:
+        #     global hubManager
+        #     hubManager = HubManager(
+        #         10000, verbose)
+        # except Exception as iothub_error:
+        #     print("Unexpected error %s from IoTHub" % iothub_error)
+        #     return
+        streamImage = StreamImage(imageDir, imageProcessingEndpoint, imageProcessingParams, showImage, verbose, resizeWidth, resizeHeight, annotate, send_to_Hub_callback)
+        streamImage.start()
     except KeyboardInterrupt:
         print("Camera capture module stopped")
 
@@ -106,13 +104,13 @@ def __convertStringToBool(env):
 
 if __name__ == '__main__':
     try:
-        IMAGE_DIR = os.environ['IMAGE_DIR']
+        IMAGE_DIR = "data"
         IMAGE_PROCESSING_ENDPOINT = os.getenv('IMAGE_PROCESSING_ENDPOINT', "")
         IMAGE_PROCESSING_PARAMS = os.getenv('IMAGE_PROCESSING_PARAMS', "")
-        SHOW_IMAGE = __convertStringToBool(os.getenv('SHOW_IMAGE', 'False'))
+        SHOW_IMAGE = __convertStringToBool(os.getenv('SHOW_IMAGE', 'True'))
         VERBOSE = __convertStringToBool(os.getenv('VERBOSE', 'False'))
-        RESIZE_WIDTH = int(os.getenv('RESIZE_WIDTH', 0))
-        RESIZE_HEIGHT = int(os.getenv('RESIZE_HEIGHT', 0))
+        RESIZE_WIDTH = int(os.getenv('RESIZE_WIDTH', 640))
+        RESIZE_HEIGHT = int(os.getenv('RESIZE_HEIGHT', 640))
         ANNOTATE = __convertStringToBool(os.getenv('ANNOTATE', 'False'))
 
     except ValueError as error:

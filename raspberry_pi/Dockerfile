@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:18.04
 
 RUN echo "BUILD MODULE: StreamImage"
 
@@ -11,7 +11,11 @@ RUN apt-get update && \
         python3-dev \
         libcurl4-openssl-dev \
         libboost-python-dev \
-        libgtk2.0-dev
+        libgtk2.0-dev \
+        ffmpeg \
+        libsm6 \
+        libxext6
+        
 
 # Install Python packages
 RUN pip3 install --upgrade pip

@@ -46,12 +46,14 @@ class StreamImage:
             print("   - Annotate: " + str(self.annotate))
             print("   - Send processing results to hub: " + str(self.sendToHubCallback is not None))
             print()
-            
+        
+        self.displayImage = None 
+        
         if self.showImage:
             self.imageServer = ImageServer(5012, self)
             self.imageServer.start()
         
-        self.displayImage = None
+
         
     def __annotate(self, frame, response):
         AnnotationParserInstance = AnnotationParser()
@@ -107,7 +109,8 @@ class StreamImage:
                 except Exception as e:
                     print("Could not display the video to a web browser.") 
                     print('Excpetion -' + str(e))
-            sleep(10)
+            sleep(5)
+            
     def __exit__(self, exception_type, exception_value, traceback):
         if self.showImage:
             self.imageServer.close()
