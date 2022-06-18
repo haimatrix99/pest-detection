@@ -6,8 +6,8 @@ ADD . ./app
 
 WORKDIR /app
 
-RUN sudo pip3 install -U pip
-RUN sudo pip3 install -r yolov5/requirements.txt
+RUN pip3 install -U pip
+RUN pip3 install -r yolov5/requirements.txt
 
 # Expose the port
 EXPOSE 80
