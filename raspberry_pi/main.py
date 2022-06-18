@@ -108,10 +108,10 @@ if __name__ == '__main__':
         IMAGE_PROCESSING_ENDPOINT = os.getenv('IMAGE_PROCESSING_ENDPOINT', "")
         IMAGE_PROCESSING_PARAMS = os.getenv('IMAGE_PROCESSING_PARAMS', "")
         SHOW_IMAGE = __convertStringToBool(os.getenv('SHOW_IMAGE', 'True'))
-        VERBOSE = __convertStringToBool(os.getenv('VERBOSE', 'False'))
+        VERBOSE = __convertStringToBool(os.getenv('VERBOSE', 'True'))
         RESIZE_WIDTH = int(os.getenv('RESIZE_WIDTH', 640))
         RESIZE_HEIGHT = int(os.getenv('RESIZE_HEIGHT', 640))
-        ANNOTATE = __convertStringToBool(os.getenv('ANNOTATE', 'False'))
+        ANNOTATE = __convertStringToBool(os.getenv('ANNOTATE', 'True'))
 
     except ValueError as error:
         print(error)

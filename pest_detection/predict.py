@@ -1,6 +1,8 @@
 # limit the number of cpus used by high performance libraries
 from datetime import datetime
 import os
+import numpy as np
+
 
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -12,7 +14,6 @@ import sys
 sys.path.insert(0, './yolov5')
 
 import argparse
-import os
 from pathlib import Path
 import cv2
 import torch
@@ -23,6 +24,7 @@ from yolov5.utils.datasets import LoadImages, LoadStreams, IMG_FORMATS, VID_FORM
 from yolov5.utils.general import LOGGER, check_img_size, check_file, non_max_suppression, scale_coords, xyxy2xywh, increment_path
 from yolov5.utils.torch_utils import select_device, time_sync
 from yolov5.utils.plots import Annotator, colors
+from yolov5.utils.augmentations import letterbox
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # yolov5 deepsort root directory
@@ -56,10 +58,8 @@ opt = parser.parse_args()
 def log_msg(msg):
     print("{}: {}".format(datetime.now(),msg))
 
-def predict_image(opt):
-    source, yolo_model, show, save, imgsz, project, exist_ok= \
-        opt.source, opt.yolo_model, opt.show, opt.save, \
-        opt.imgsz, opt.project, opt.exist_ok
+def predict(opt):
+    yolo_model, show, save, imgsz, project, exist_ok= opt.yolo_model, opt.show, opt.save, opt.imgsz, opt.project, opt.exist_ok
 
     if opt.track:
         from deep_sort.utils.parser import get_config
@@ -71,12 +71,11 @@ def predict_image(opt):
             max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
             max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
             use_cuda=True)
-        
-    is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
-    
-    webcam = source == '0' or source.startswith(
-        'rtsp') or source.startswith('http') or source.endswith('.txt')
 
+    is_file = Path(opt.source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
+    
+    webcam = opt.source == '0'
+    
     if is_file:
         source = check_file(source)
     # Initialize
@@ -93,10 +92,10 @@ def predict_image(opt):
     # Dataloader
     if webcam:
         cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt and not jit)
+        dataset = LoadStreams(opt.source, img_size=imgsz, stride=stride, auto=pt and not jit)
         bs = len(dataset)  # batch_size
     else:
-        dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt and not jit)
+        dataset = LoadImages(opt.source, img_size=imgsz, stride=stride, auto=pt and not jit)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
 
@@ -171,7 +170,7 @@ def predict_image(opt):
                             c = int(cls)  # integer class
                             label = f'{id} {names[c]}'
                             annotator.box_label(bboxes, label, color=colors(c, True))
-                    LOGGER.info(f'{s}\nInference time: YOLO: {t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
+                    # LOGGER.info(f'{s}\nInference time: YOLO: t3 - t2:.3f}s - Deep SORT: {t5 - t4:.3f}s')
                 else:
                     for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
@@ -181,14 +180,14 @@ def predict_image(opt):
                             'labelId': c,
                             'labelName': label,
                             'color': colors(c, True),
-                            'probability': conf,
-                            'boundingbox': [xyxy[0], xyxy[1], xyxy[2],xyxy[3]]
+                            'probability': int(conf),
+                            'boundingbox': [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]),int(xyxy[3])]
                         })
-                    # LOGGER.info(f'{s}\nInference time: YOLO: {t3 - t2:.3f}s')
+                    LOGGER.info(f'{s}\nInference time: YOLO: {t3 - t2:.3f}s')
             else:
                 if opt.track and dataset.mode != 'image':
                     deepsort.increment_ages()
-                # LOGGER.info('No detections')
+                LOGGER.info('No detections')
 
             response = {
                 'created': datetime.utcnow().isoformat(),
@@ -196,8 +195,6 @@ def predict_image(opt):
                 'count': counts if counts else "No object detected"
             }
     
-            log_msg('Predicting image')
-            log_msg("Results: \n" + str(response["count"]))
             # Stream results
             im0 = annotator.result()
             if show:
@@ -240,5 +237,67 @@ def predict_image(opt):
         print('Results saved to %s' % save_path)
     return response
 
+def predict_image(img0):
+    device = select_device(opt.device)
+    # Load model
+    model = DetectMultiBackend(opt.yolo_model, device=device, dnn=opt.dnn)
+    
+    img = letterbox(img0, 640, stride=32, auto=True)[0]
+    
+    # Convert
+    img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+    
+    img = np.ascontiguousarray(img)
+    
+    img = torch.from_numpy(img).to(device).float()
+    img /= 255.0  # 0 - 255 to 0.0 - 1.0
+    
+    if img.ndimension() == 3:
+        img = img.unsqueeze(0)
+        
+    names = model.names
+      
+    pred = model(img, augment=opt.augment)
+    im0 = img0.copy()
+    # Apply NMS
+    pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, opt.classes, opt.agnostic_nms, max_det=opt.max_det)
+
+    # Process detections
+    for det in pred:  # detections per image        
+        annotator = Annotator(im0, pil=not ascii)
+        
+        counts = {}
+        results = []
+        if det is not None and len(det):
+            # Rescale boxes from img_size to img size
+            det[:, :4] = scale_coords(
+                img.shape[2:], det[:, :4], im0.shape).round()
+            
+            for c in det[:, -1].unique():
+                n = (det[:, -1] == c).sum()  # detections per class
+                if names[int(c)] not in counts:
+                    counts[names[int(c)]] = int(n)
+                    
+            for *xyxy, conf, cls in reversed(det):
+                c = int(cls)  # integer class
+                label =f'{names[c]}'
+                annotator.box_label(xyxy, label, color=colors(c, True))
+                results.append({
+                    'labelId': c,
+                    'labelName': label,
+                    'color': colors(c, True),
+                    'probability': int(conf),
+                    'boundingbox': [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]),int(xyxy[3])]
+                })
+
+        response = {
+            'created': datetime.utcnow().isoformat(),
+            'predictions': results if results else "No object detected",
+            'count': counts if counts else "No object detected"
+        }
+    return response
+
 if __name__ == "__main__":
-    response = predict_image(opt)
+    from PIL import Image
+    image = np.array(Image.open("data/images/IP-0000001.png"))
+    response = predict_image(image)

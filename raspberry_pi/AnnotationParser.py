@@ -8,10 +8,10 @@ class AnnotationParser:
             listColors = []
             for item in response["detections"]:
                 for rectList, color in zip(item["boundingbox"], item["color"]):
-                    topLeftX = int(rectList[0])
-                    topLeftY = int(rectList[1])
-                    bottomRightX = int(rectList[2])
-                    bottomRightY = int(rectList[3])
+                    topLeftX = rectList[0]
+                    topLeftY = rectList[1]
+                    bottomRightX = rectList[2]
+                    bottomRightY = rectList[3]
                     listRectangles.append(
                     [topLeftX, topLeftY, bottomRightX, bottomRightY])
                     listColors.append(color)
