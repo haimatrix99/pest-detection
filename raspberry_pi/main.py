@@ -80,13 +80,13 @@ def main(
     '''
     try:
         print("Stream Image Azure IoT Edge Module. Press Ctrl-C to exit.")
-        # try:
-        #     global hubManager
-        #     hubManager = HubManager(
-        #         10000, verbose)
-        # except Exception as iothub_error:
-        #     print("Unexpected error %s from IoTHub" % iothub_error)
-        #     return
+        try:
+            global hubManager
+            hubManager = HubManager(
+                10000, verbose)
+        except Exception as iothub_error:
+            print("Unexpected error %s from IoTHub" % iothub_error)
+            return
         streamImage = StreamImage(imageDir, imageProcessingEndpoint, imageProcessingParams, showImage, verbose, resizeWidth, resizeHeight, annotate, send_to_Hub_callback)
         streamImage.start()
     except KeyboardInterrupt:
