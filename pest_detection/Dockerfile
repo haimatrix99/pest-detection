@@ -4,14 +4,13 @@ RUN mkdir app
 
 ADD . ./app
 
-RUN pip install -U pip
-RUN pip install -r yolov5/requirements.txt
+WORKDIR /app
+
+RUN sudo pip3 install -U pip
+RUN sudo pip3 install -r yolov5/requirements.txt
 
 # Expose the port
 EXPOSE 80
 
-# Set the working directory
-WORKDIR /app
-
 # Run the flask server for the endpoints
-CMD python -u app.py
+CMD python3 -u app.py
