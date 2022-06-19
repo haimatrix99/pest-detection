@@ -29,7 +29,6 @@ class StreamImage:
         self.imageProcessingEndpoint = imageProcessingEndpoint
         self.annotate = annotate
         self.sendToHubCallback = sendToHubCallback
-        self.response = "[]"
         if imageProcessingParams == "":
             self.imageProcessingParams = "" 
         else:
@@ -70,10 +69,10 @@ class StreamImage:
 
         if self.verbose:
             try:
-                print("Response from external processing service: (" + str(response.status_code) + ") " + json.dumps(response.json()))
+                print("Response from external processing service: (" + str(response.status_code) + ") " + json.dumps(response.json()['count']), indent=4)
             except Exception:
                 print("Response from external processing service (status code): " + str(response.status_code))
-        return json.dumps(response.json())
+        return response
     
     def get_display_image(self):
         return self.displayImage
@@ -92,17 +91,16 @@ class StreamImage:
                 encodedImage = cv2.imencode(".jpg", preprocessedImage)[1].tostring()
 
                 #Send over HTTP for processing
-                self.response = self.__sendImageForProcessing(encodedImage)
-                print(type(self.response))
+                response = self.__sendImageForProcessing(encodedImage)
                 #forwarding outcome of external processing to the EdgeHub
-                if self.response != "[]" and self.sendToHubCallback is not None:
-                    self.sendToHubCallback(self.response)
+                if response != "[]" and self.sendToHubCallback is not None:
+                    self.sendToHubCallback(json.dumps(response.json(), indent=4))
 
             #Display frames
             if self.showImage:
                 try:
-                    if self.annotate and self.response != "[]":
-                        self.__annotate(preprocessedImage, self.response)
+                    if self.annotate and response != "[]":
+                        self.__annotate(preprocessedImage, response.json())
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
                     print("Could not display the video to a web browser.") 
