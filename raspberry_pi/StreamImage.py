@@ -59,12 +59,12 @@ class StreamImage:
             cv2.rectangle(frame, (rectangle(0), rectangle(1)), (rectangle(2), rectangle(3)), color, 3)
         return
 
-    def __sendFrameForProcessing(self, frame):
+    def __sendImageForProcessing(self, frame):
         headers = {'Content-Type': 'application/octet-stream'}
         try:
             response = requests.post(self.imageProcessingEndpoint, headers = headers, params = self.imageProcessingParams, data = frame)
         except Exception as e:
-            print('__sendFrameForProcessing Excpetion -' + str(e))
+            print('__sendImageForProcessing Excpetion -' + str(e))
             return "[]"
 
         if self.verbose:
