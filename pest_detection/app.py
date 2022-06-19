@@ -36,7 +36,7 @@ def predict_image_handler():
             imageData = io.BytesIO(request.get_data())
         img = np.array(Image.open(imageData))
         response = predict_image(img)
-        return jsonify(response)
+        return jsonify(response['count'])
     except Exception as e:
         print('EXCEPTION:', str(e))
         return 'Error processing image', 500
