@@ -291,11 +291,11 @@ def predict_image(img0):
                     'boundingbox': [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]),int(xyxy[3])]
                 })
 
-        response = {
-            'created': datetime.utcnow().isoformat(),
-            'predictions': results if results else "No object detected",
-            'count': counts if counts else "No object detected"
-        }
+    response = {
+        'created': datetime.utcnow().isoformat(),
+        'predictions': results if results else "No object detected",
+        'count': counts if counts else "No object detected"
+    }
     return response
 
 if __name__ == "__main__":
@@ -303,6 +303,5 @@ if __name__ == "__main__":
     opt.source = "data/images/IP-0000001.png"
     image = np.array(Image.open(opt.source))
     response = predict_image(image)
-    response_opt = predict(opt)
+    print(type(response))
     print(response["count"])
-    print(response_opt["count"])

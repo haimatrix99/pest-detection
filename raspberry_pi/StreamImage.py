@@ -59,7 +59,7 @@ class StreamImage:
             cv2.rectangle(frame, (rectangle(0), rectangle(1)), (rectangle(2), rectangle(3)), color, 3)
         return
 
-    def __sendImageForProcessing(self, frame):
+    def __sendFrameForProcessing(self, frame):
         headers = {'Content-Type': 'application/octet-stream'}
         try:
             response = requests.post(self.imageProcessingEndpoint, headers = headers, params = self.imageProcessingParams, data = frame)
@@ -72,7 +72,7 @@ class StreamImage:
                 print("Response from external processing service: (" + str(response.status_code) + ") " + json.dumps(response.json()['count']), indent=4)
             except Exception:
                 print("Response from external processing service (status code): " + str(response.status_code))
-        return response
+        return json.dumps(response.json())
     
     def get_display_image(self):
         return self.displayImage
@@ -93,14 +93,15 @@ class StreamImage:
                 #Send over HTTP for processing
                 response = self.__sendImageForProcessing(encodedImage)
                 #forwarding outcome of external processing to the EdgeHub
+
                 if response != "[]" and self.sendToHubCallback is not None:
-                    self.sendToHubCallback(json.dumps(response.json(), indent=4))
+                    self.sendToHubCallback(response)
 
             #Display frames
             if self.showImage:
                 try:
                     if self.annotate and response != "[]":
-                        self.__annotate(preprocessedImage, response.json())
+                        self.__annotate(preprocessedImage, json.loads(response))
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
                     print("Could not display the video to a web browser.") 
