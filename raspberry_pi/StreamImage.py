@@ -27,9 +27,9 @@ class StreamImage:
         self.resizeWidth = resizeWidth
         self.resizeHeight = resizeHeight
         self.imageProcessingEndpoint = imageProcessingEndpoint
-        self.annotate = (self.imageProcessingEndpoint != "") and self.showImage & annotate
+        self.annotate = annotate
         self.sendToHubCallback = sendToHubCallback
-        
+        self.response = "[]"
         if imageProcessingParams == "":
             self.imageProcessingParams = "" 
         else:
@@ -52,8 +52,6 @@ class StreamImage:
         if self.showImage:
             self.imageServer = ImageServer(5012, self)
             self.imageServer.start()
-        
-
         
     def __annotate(self, frame, response):
         AnnotationParserInstance = AnnotationParser()
@@ -94,22 +92,22 @@ class StreamImage:
                 encodedImage = cv2.imencode(".jpg", preprocessedImage)[1].tostring()
 
                 #Send over HTTP for processing
-                response = self.__sendImageForProcessing(encodedImage)
+                self.response = self.__sendImageForProcessing(encodedImage)
 
                 #forwarding outcome of external processing to the EdgeHub
-                if response != "[]" and self.sendToHubCallback is not None:
-                    self.sendToHubCallback(response)
+                if self.response != "[]" and self.sendToHubCallback is not None:
+                    self.sendToHubCallback(self.response)
 
             #Display frames
             if self.showImage:
                 try:
-                    if self.annotate and response != "[]":
-                        self.__annotate(preprocessedImage, response)
+                    if self.annotate and self.response != "[]":
+                        self.__annotate(preprocessedImage, self.response)
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
                     print("Could not display the video to a web browser.") 
                     print('Excpetion -' + str(e))
-            sleep(30)
+            sleep(20)
             
     def __exit__(self, exception_type, exception_value, traceback):
         if self.showImage:
@@ -118,7 +116,7 @@ class StreamImage:
                     
 if __name__ == "__main__":
     imageDir = "data" 
-    sendImage = StreamImage(imageDir, showImage=True)
+    sendImage = StreamImage(imageDir, showImage=True, annotate=True)
     sendImage.start()
         
         
