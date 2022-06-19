@@ -105,7 +105,7 @@ class StreamImage:
                 try:
                     if self.annotate and response != []:
                         self.__annotate(preprocessedImage, response)
-                        self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
+                    self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
                     print("Could not display the video to a web browser.") 
                     print('Excpetion -' + str(e))
