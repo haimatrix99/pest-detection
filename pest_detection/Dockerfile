@@ -6,6 +6,8 @@ ADD . ./app
 
 WORKDIR /app
 
+RUN apt-get update
+RUN apt-get install ffmpeg libsm6 libxext6  -y
 RUN pip3 install -U pip
 RUN pip3 install -r yolov5/requirements.txt
 
