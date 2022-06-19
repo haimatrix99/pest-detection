@@ -2,7 +2,11 @@ FROM ubuntu:18.04
 
 RUN echo "BUILD MODULE: StreamImage"
 
-WORKDIR /.
+RUN mkdir app
+
+ADD . /app
+
+WORKDIR /app
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

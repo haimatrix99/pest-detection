@@ -286,7 +286,7 @@ def predict_image(img0):
                     'labelId': c,
                     'labelName': label,
                     'color': colors(c, True),
-                    'probability': int(conf),
+                    'probability': conf.numpy(),
                     'boundingbox': [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]),int(xyxy[3])]
                 })
 
