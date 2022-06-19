@@ -93,7 +93,7 @@ class StreamImage:
 
                 #Send over HTTP for processing
                 self.response = self.__sendImageForProcessing(encodedImage)
-
+                print(type(self.response))
                 #forwarding outcome of external processing to the EdgeHub
                 if self.response != "[]" and self.sendToHubCallback is not None:
                     self.sendToHubCallback(self.response)
