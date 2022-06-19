@@ -77,7 +77,7 @@ def predict(opt):
     webcam = opt.source == '0'
     
     if is_file:
-        source = check_file(source)
+        source = check_file(opt.source)
     # Initialize
     device = select_device(opt.device)
     # Load model
@@ -245,18 +245,19 @@ def predict_image(img0):
     img = letterbox(img0, 640, stride=32, auto=True)[0]
     
     # Convert
-    img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+    img = img.transpose((2, 0, 1))  # HWC to CHW, BGR to RGB
     
     img = np.ascontiguousarray(img)
     
     img = torch.from_numpy(img).to(device).float()
+    
     img /= 255.0  # 0 - 255 to 0.0 - 1.0
     
     if img.ndimension() == 3:
         img = img.unsqueeze(0)
         
     names = model.names
-      
+
     pred = model(img, augment=opt.augment)
     im0 = img0.copy()
     # Apply NMS
@@ -299,5 +300,9 @@ def predict_image(img0):
 
 if __name__ == "__main__":
     from PIL import Image
-    image = np.array(Image.open("data/images/IP-0000001.png"))
+    opt.source = "data/images/IP-0000001.png"
+    image = np.array(Image.open(opt.source))
     response = predict_image(image)
+    response_opt = predict(opt)
+    print(response["count"])
+    print(response_opt["count"])

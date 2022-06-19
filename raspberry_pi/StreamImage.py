@@ -103,7 +103,7 @@ class StreamImage:
             #Display frames
             if self.showImage:
                 try:
-                    if self.annotate and response != []:
+                    if self.annotate and response != "[]":
                         self.__annotate(preprocessedImage, response)
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
