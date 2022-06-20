@@ -60,11 +60,14 @@ class StreamImage:
             self.imageServer.start()
         
     def __annotate(self, frame, response):
-        AnnotationParserInstance = AnnotationParser()
-        listRectangles, listColors = AnnotationParserInstance.getAnnotations(response)
-        for rectangle, color in listRectangles, listColors:
-            cv2.rectangle(frame, (rectangle(0), rectangle(1)), (rectangle(2), rectangle(3)), color, 3)
-        return
+        try:
+            AnnotationParserInstance = AnnotationParser()
+            listRectangles, listColors = AnnotationParserInstance.getAnnotations(response)
+            for rectangle, color in listRectangles, listColors:
+                cv2.rectangle(frame, (rectangle(0), rectangle(1)), (rectangle(2), rectangle(3)), color, 3)
+            return
+        except Exception as e:
+            print(e)
 
     def __sendImageForProcessing(self, frame):
         headers = {'Content-Type': 'application/octet-stream'}
@@ -108,9 +111,9 @@ class StreamImage:
             #Display frames
             if self.showImage:
                 try:
-                    # if self.annotate and response != "[]":
-                    #     predictions = response["predictions"]
-                    #     self.__annotate(preprocessedImage, predictions)
+                    if self.annotate and response != "[]":
+                        predictions = json.loads(response)["predictions"]
+                        self.__annotate(preprocessedImage, predictions)
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
                     print("Could not display the video to a web browser.") 

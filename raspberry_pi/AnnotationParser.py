@@ -6,8 +6,8 @@ class AnnotationParser:
         try:
             listRectangles = []
             listColors = []
-            for item in predictions:
-                for rectList, color in zip(item['boundingbox'], item['color']):
+            for prediction in predictions:
+                for rectList, color in zip(prediction['boundingbox'], prediction['color']):
                     topLeftX = rectList[0]
                     topLeftY = rectList[1]
                     bottomRightX = rectList[2]
@@ -16,5 +16,5 @@ class AnnotationParser:
                     [topLeftX, topLeftY, bottomRightX, bottomRightY])
                     listColors.append(color)
             return listRectangles, listColors
-        except:
-            pass
+        except Exception as e:
+            print(e)

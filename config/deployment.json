@@ -88,8 +88,8 @@
         "properties.desired": {
           "schemaVersion": "1.0",
           "routes": {
-            "CameraCaptureToIoTHub": "FROM /messages/modules/stream-image/outputs/output1 INTO $upstream",
-            "CameraCaptureGAToIoTHub": "FROM /messages/modules/StreamImageGA/outputs/* INTO $upstream"
+            "StreamImageToIoTHub": "FROM /messages/modules/stream-image/outputs/output1 INTO $upstream",
+            "StreamImageGAToIoTHub": "FROM /messages/modules/StreamImageGA/outputs/* INTO $upstream"
           },
           "storeAndForwardConfiguration": {
             "timeToLiveSecs": 7200
