@@ -108,6 +108,7 @@ class StreamImage:
             if self.showImage:
                 try:
                     if self.annotate and response != "[]":
+                        print(type(json.loads(response)))
                         self.__annotate(preprocessedImage, json.loads(response))
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
