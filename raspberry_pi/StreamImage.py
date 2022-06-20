@@ -63,7 +63,7 @@ class StreamImage:
         try:
             AnnotationParserInstance = AnnotationParser()
             listRectangles, listColors = AnnotationParserInstance.getAnnotations(response)
-            for rectangle, color in listRectangles, listColors:
+            for rectangle, color in zip(listRectangles, listColors):
                 cv2.rectangle(frame, (rectangle(0), rectangle(1)), (rectangle(2), rectangle(3)), color, 3)
             return
         except Exception as e:
