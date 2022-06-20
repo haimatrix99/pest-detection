@@ -13,7 +13,7 @@ WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install ffmpeg libsm6 libxext6  -y
 RUN pip3 install --upgrade pip setuptools wheel
-RUN pip3 install --extra-index-url="https://www.piwheels.org/simple" --no-deps -r requirements.txt
+RUN pip3 install --extra-index-url="https://www.piwheels.org/simple" -r requirements.txt
 
 # Cleanup
 RUN rm -rf /var/lib/apt/lists/* \
