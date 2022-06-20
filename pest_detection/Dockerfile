@@ -8,20 +8,16 @@ ADD . ./app
 
 WORKDIR /app
 
-RUN apt update && apt install -y libjpeg62-turbo libopenjp2-7 libtiff5 libatlas-base-dev libxcb1
-RUN apt-get install libjpeg-dev libopenblas-dev libopenmpi-dev libomp-dev
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install git
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+RUN pip3 install --upgrade pip setuptools wheel 
+RUN pip3 install numpy==1.20 matplotlib opencv-python Pillow PyYAML requests scipy tqdm tensorboard pandas seaborn thop flask --extra-index-url 'https://www.piwheels.org/simple' --no-deps
+RUN git clone https://github.com/Kashu7100/pytorch-armv7l.git
+RUN pip3 install pytorch-armv7l/torch-1.7.0a0-cp37-cp37m-linux_armv7l.whl
+RUN pip3 install pytorch-armv7l/torchvision-0.8.0a0+45f960c-cp37-cp37m-linux_armv7l.whl
 
-RUN pip3 install --upgrade pip
-RUN pip3 install --upgrade setuptools
-RUN pip3 install -r ./yolov5/arm32v7.requirements.txt
-RUN pip3 install flask==1.1.2 --index-url 'https://www.piwheels.org/simple'
-RUN pip install numpy==1.16--extra-index-url 'https://www.piwheels.org/simple' --no-deps
-RUN wget https://raw.githubusercontent.com/Kashu7100/pytorch-armv7l/main/torch-1.7.0a0-cp37-cp37m-linux_armv7l.whl
-RUN wget https://raw.githubusercontent.com/Kashu7100/pytorch-armv7l/main/torchvision-0.8.0a0%2B45f960c-cp37-cp37m-linux_armv7l.whl
-
-RUN pip3 install torch-1.7.0a0-cp37-cp37m-linux_armv7l.whl
-RUN pip3 install torchvision-0.8.0a0%2B45f960c-cp37-cp37m-linux_armv7l.whl 
-RUN rm torch-1.7.0a0-cp37-cp37m-linux_armv7l.whl && rm torchvision-0.8.0a0%2B45f960c-cp37-cp37m-linux_armv7l.whl 
+RUN rm -rf pytorch-armv7l
 
 # Expose the port
 EXPOSE 80
