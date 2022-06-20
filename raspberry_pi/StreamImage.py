@@ -9,6 +9,12 @@ from AnnotationParser import AnnotationParser
 import ImageServer
 from ImageServer import ImageServer
 
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+    
 class StreamImage:
     def __init__(self,
                  imageDir,
@@ -69,10 +75,10 @@ class StreamImage:
 
         if self.verbose:
             try:
-                print("Response from external processing service: (" + str(response.status_code) + ") " + json.dumps(response.json()['count']), indent=4)
+                print("Response from external processing service: (" + str(response.status_code) + ") " + json.dumps(response.json()), indent=4)
             except Exception:
                 print("Response from external processing service (status code): " + str(response.status_code))
-        return json.dumps(response.json())
+        return json.dumps(response.json(), cls=NumpyEncoder)
     
     def get_display_image(self):
         return self.displayImage
