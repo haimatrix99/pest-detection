@@ -1,5 +1,6 @@
 from time import sleep
 from glob import glob
+import time
 import cv2
 import numpy as np
 import requests
@@ -78,7 +79,7 @@ class StreamImage:
 
         if self.verbose:
             try:
-                print("Response from external processing service: (" + str(response.status_code) + ") " + \
+                print("Response from external processing service: (" + str(response.status_code) + ") \n" + \
                     json.dumps(response.json()["count"]))
             except Exception:
                 print("Response from external processing service (status code): " + str(response.status_code))
@@ -90,6 +91,8 @@ class StreamImage:
     def start(self):
         images = glob(self.imageDir+'/*.*')
         for image in images:
+            if self.showVideo or self.verbose:
+                startOverall = time.time()
             image = cv2.imread(image)
 
             #Pre-process locally
@@ -117,7 +120,11 @@ class StreamImage:
                 except Exception as e:
                     print("Could not display the video to a web browser.") 
                     print('Excpetion -' + str(e))
+            if self.verbose:
+                perfForOneFrameInMs = int((time.time()-startOverall) * 1000)
+                print("Total time for one frame: ", perfForOneFrameInMs)
             sleep(20)
+            
     def __exit__(self, exception_type, exception_value, traceback):
         if self.showImage:
             self.imageServer.close()
