@@ -76,7 +76,8 @@ class StreamImage:
 
         if self.verbose:
             try:
-                print("Response from external processing service: (" + str(response.status_code) + ") " + json.dumps(response.json()), indent=4)
+                print("Response from external processing service: (" + str(response.status_code) + ") " + \
+                    json.dumps(response.json()))
             except Exception:
                 print("Response from external processing service (status code): " + str(response.status_code))
         return json.dumps(response.json(), cls=NumpyEncoder)
@@ -102,6 +103,7 @@ class StreamImage:
                 #forwarding outcome of external processing to the EdgeHub
 
                 if response != "[]" and self.sendToHubCallback is not None:
+                    print(type(response))
                     self.sendToHubCallback(response)
 
             #Display frames
