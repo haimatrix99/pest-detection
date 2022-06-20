@@ -15,6 +15,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install --upgrade setuptools
 RUN pip3 install -r ./yolov5/arm32v7.requirements.txt
 RUN pip3 install flask==1.1.2 --index-url 'https://www.piwheels.org/simple'
+RUN pip install numpy==1.16--extra-index-url 'https://www.piwheels.org/simple' --no-deps
 RUN wget https://raw.githubusercontent.com/Kashu7100/pytorch-armv7l/main/torch-1.7.0a0-cp37-cp37m-linux_armv7l.whl
 RUN wget https://raw.githubusercontent.com/Kashu7100/pytorch-armv7l/main/torchvision-0.8.0a0%2B45f960c-cp37-cp37m-linux_armv7l.whl
 
