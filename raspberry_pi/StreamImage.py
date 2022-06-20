@@ -103,7 +103,6 @@ class StreamImage:
                 #forwarding outcome of external processing to the EdgeHub
 
                 if response != "[]" and self.sendToHubCallback is not None:
-                    print(type(response))
                     self.sendToHubCallback(response)
 
             #Display frames
