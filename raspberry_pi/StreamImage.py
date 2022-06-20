@@ -109,9 +109,9 @@ class StreamImage:
             #Display frames
             if self.showImage:
                 try:
-                    if self.annotate and response != "[]":
-                        print(type(json.loads(response)))
-                        self.__annotate(preprocessedImage, json.loads(response))
+                    # if self.annotate and response != "[]":
+                    #     predictions = response["predictions"]
+                    #     self.__annotate(preprocessedImage, predictions)
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
                     print("Could not display the video to a web browser.") 

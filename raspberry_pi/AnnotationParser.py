@@ -2,12 +2,12 @@
 from __future__ import absolute_import
 
 class AnnotationParser:
-    def getAnnotations(self, response):
+    def getAnnotations(self, predictions):
         try:
             listRectangles = []
             listColors = []
-            for item in response["detections"]:
-                for rectList, color in zip(item["boundingbox"], item["color"]):
+            for item in predictions:
+                for rectList, color in zip(item['boundingbox'], item['color']):
                     topLeftX = rectList[0]
                     topLeftY = rectList[1]
                     bottomRightX = rectList[2]
