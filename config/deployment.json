@@ -41,7 +41,7 @@
             }
           },
           "modules": {
-            "stream-image": {
+            "stream-image-service": {
               "version": "1.0",
               "type": "docker",
               "status": "running",

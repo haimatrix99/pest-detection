@@ -11,6 +11,7 @@ WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install git
 RUN apt-get install ffmpeg libsm6 libxext6  -y
+RUN apt-get install libatlas-base-dev -y
 RUN pip3 install --upgrade pip setuptools wheel 
 RUN pip3 install numpy==1.20 matplotlib opencv-python Pillow PyYAML requests scipy tqdm tensorboard pandas seaborn flask --extra-index-url 'https://www.piwheels.org/simple'
 RUN git clone https://github.com/Kashu7100/pytorch-armv7l.git

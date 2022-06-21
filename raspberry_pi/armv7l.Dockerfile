@@ -12,6 +12,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install ffmpeg libsm6 libxext6  -y
+RUN apt-get install libatlas-base-dev -y
 RUN pip3 install --upgrade pip setuptools wheel
 RUN pip3 install --extra-index-url="https://www.piwheels.org/simple" -r requirements.txt
 
