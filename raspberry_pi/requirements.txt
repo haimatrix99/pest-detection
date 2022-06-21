@@ -1,6 +1,6 @@
 azure-iot-device
 azure-mgmt-iothub
-numpy
+numpy==1.19.5
 requests
 trollius
 tornado==4.5.3
