@@ -2,10 +2,10 @@
 # Licensed under the MIT license. See LICENSE file in the project root for
 # full license information.
 
+from StreamImage import StreamImage
+from azure.iot.device import IoTHubModuleClient, Message
 import os
-import random
 import sys
-import time
 
 #import iothub_client
 # pylint: disable=E0611
@@ -13,11 +13,6 @@ import time
 #from iothub_client import (IoTHubModuleClient, IoTHubClientError, IoTHubError,
 #                           IoTHubMessage, IoTHubMessageDispositionResult,
 #                           IoTHubTransportProvider)
-
-from azure.iot.device import IoTHubModuleClient, Message
-
-from StreamImage import StreamImage
-
 
 # global counters
 SEND_CALLBACKS = 0

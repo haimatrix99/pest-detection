@@ -1,14 +1,12 @@
 import io
 
-# Imports for the REST API
-from flask import Flask, request, jsonify
-
-# Imports for image procesing
-from PIL import Image
-import numpy as np
-
 # Imports for prediction
 from predict import predict_image
+# Imports for image procesing
+import numpy as np
+from PIL import Image
+# Imports for the REST API
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
