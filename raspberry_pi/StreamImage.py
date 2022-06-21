@@ -91,7 +91,7 @@ class StreamImage:
     def start(self):
         images = glob(self.imageDir+'/*.*')
         for image in images:
-            if self.showVideo or self.verbose:
+            if self.showImage or self.verbose:
                 startOverall = time.time()
             image = cv2.imread(image)
 
