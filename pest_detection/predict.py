@@ -256,7 +256,7 @@ def predict_image(img0):
     if img.ndimension() == 3:
         img = img.unsqueeze(0)
         
-    names = model.names
+    names = [c.strip() for c in open("assets/classes.txt", "r").readlines()]
 
     pred = model(img, augment=opt.augment)
     im0 = img0.copy()
