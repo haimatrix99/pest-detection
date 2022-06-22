@@ -22,11 +22,11 @@ class StreamImage:
                  imageDir,
                  imageProcessingEndpoint="",
                  imageProcessingParams="",
-                 showImage = False,
+                 showImage = True,
                  verbose=True,
                  resizeWidth = 640,
                  resizeHeight = 640,
-                 annotate=False,
+                 annotate=True,
                  sendToHubCallback = None):
         
         self.imageDir = imageDir
