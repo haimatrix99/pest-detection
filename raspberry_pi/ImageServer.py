@@ -30,11 +30,11 @@ class ImageStreamHandler(tornado.websocket.WebSocketHandler):
 
 class ImageServer(threading.Thread):
 
-    def __init__(self, port, image):
+    def __init__(self, port, imageObj):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.port = port
-        self.image = image
+        self.image = imageObj
 
     def run(self):
         try:

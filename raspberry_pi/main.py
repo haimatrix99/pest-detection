@@ -100,7 +100,7 @@ def __convertStringToBool(env):
 if __name__ == '__main__':
     try:
         IMAGE_DIR = "data"
-        IMAGE_PROCESSING_ENDPOINT = os.getenv('IMAGE_PROCESSING_ENDPOINT', "")
+        IMAGE_PROCESSING_ENDPOINT = os.getenv('IMAGE_PROCESSING_ENDPOINT', "http://pest-detection-service:80/image")
         IMAGE_PROCESSING_PARAMS = os.getenv('IMAGE_PROCESSING_PARAMS', "")
         SHOW_IMAGE = __convertStringToBool(os.getenv('SHOW_IMAGE', 'True'))
         VERBOSE = __convertStringToBool(os.getenv('VERBOSE', 'True'))

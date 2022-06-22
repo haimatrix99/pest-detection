@@ -74,7 +74,7 @@ class StreamImage:
         try:
             response = requests.post(self.imageProcessingEndpoint, headers = headers, params = self.imageProcessingParams, data = frame)
         except Exception as e:
-            print('__sendImageForProcessing Excpetion -' + str(e))
+            print('sendImageForProcessing Excpetion - ' + str(e))
             return "[]"
 
         if self.verbose:
@@ -119,11 +119,11 @@ class StreamImage:
                     self.displayImage = cv2.imencode('.jpg', preprocessedImage)[1].tobytes()
                 except Exception as e:
                     print("Could not display the video to a web browser.") 
-                    print('Excpetion -' + str(e))
+                    print('Excpetion - ' + str(e))
             if self.verbose:
-                perfForOneFrameInMs = int((time.time()-startOverall) * 1000)
-                print("Total time for one frame: ", perfForOneFrameInMs)
-            sleep(20)
+                perfForOneFrameInMs = int(time.time()-startOverall)
+                print(f"Total time for one frame: {perfForOneFrameInMs}s")
+            sleep(10)
             
     def __exit__(self, exception_type, exception_value, traceback):
         if self.showImage:
@@ -132,7 +132,7 @@ class StreamImage:
                     
 if __name__ == "__main__":
     imageDir = "data" 
-    sendImage = StreamImage(imageDir, showImage=True, annotate=True)
+    sendImage = StreamImage(imageDir, showImage=True)
     sendImage.start()
         
         
