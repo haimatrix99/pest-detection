@@ -26,15 +26,10 @@ RUN pip3 install pytorch-armv7l/torch-1.7.0a0-cp37-cp37m-linux_armv7l.whl
 RUN pip3 install pytorch-armv7l/torchvision-0.8.0a0+45f960c-cp37-cp37m-linux_armv7l.whl
 RUN pip3 install thop
 
-RUN pip3 install h5py==2.10.0
-RUN pip3 install pybind11
-RUN pip3 install -U --user six mock
-RUN pip3 install keras_preprocessing==1.1.0 --no-deps
-RUN pip3 install keras_applications==1.0.8 --no-deps
-RUN wget https://github.com/Qengineering/Tensorflow-Raspberry-Pi/raw/master/tensorflow-2.1.0-cp37-cp37m-linux_armv7l.whl
-RUN pip3 install tensorflow-2.1.0-cp37-cp37m-linux_armv7l.whl
+RUN wget https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.4.0/tensorflow-2.4.0-cp37-none-linux_armv7l.whl
+RUN pip3 install tensorflow-2.4.0-cp37-none-linux_armv7l.whl
 RUN rm -rf pytorch-armv7l
-RUN rm -rf tensorflow-2.1.0-cp37-cp37m-linux_armv7l.whl
+RUN rm -rf tensorflow-2.4.0-cp37-none-linux_armv7l.whl
 
 # Expose the port
 EXPOSE 80
