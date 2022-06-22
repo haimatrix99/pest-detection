@@ -22,7 +22,7 @@ RUN pip3 install pytorch-armv7l/torchvision-0.8.0a0+45f960c-cp37-cp37m-linux_arm
 RUN pip3 install thop
 
 RUN wget https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.3.0/tensorflow-2.3.0-cp37-none-linux_armv7l.whl
-RUN pip3 install https://github.com/bitsy-ai/tensorflow-arm-bin/releases/download/v2.4.0-rc2/tensorflow-2.3.0-cp37-none-linux_armv7l.whl
+RUN pip3 install tensorflow-2.3.0-cp37-none-linux_armv7l.whl
 RUN rm tensorflow-2.3.0-cp37-none-linux_armv7l.whl
 RUN rm -rf pytorch-armv7l
 
