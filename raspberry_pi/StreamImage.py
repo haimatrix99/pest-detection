@@ -121,8 +121,8 @@ class StreamImage:
                     print("Could not display the video to a web browser.") 
                     print('Excpetion - ' + str(e))
             if self.verbose:
-                perfForOneFrameInMs = int(time.time()-startOverall)
-                print(f"Total time for one frame: {perfForOneFrameInMs}s")
+                perfForOneFrameInMs = time.time()-startOverall
+                print(f"Total time for one frame: {perfForOneFrameInMs:.2f}s")
             sleep(10)
             
     def __exit__(self, exception_type, exception_value, traceback):

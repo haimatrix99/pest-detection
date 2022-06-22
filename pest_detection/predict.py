@@ -33,7 +33,7 @@ if str(ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--yolo_model', nargs='+', type=str, default='assets/model-v2.pt', help='model.pt path(s)')
+parser.add_argument('--yolo_model', nargs='+', type=str, default='assets/model-v2.tflite', help='model.pt path(s)')
 parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
 parser.add_argument('--config_deepsort', type=str, default="deep_sort/configs/deep_sort.yaml")
 parser.add_argument('--track', action='store_true', help='turn on and off tracking model')
