@@ -28,7 +28,7 @@ RUN pip3 install thop
 
 RUN pip3 install h5py==2.10.0
 RUN pip3 install pybind11
-RUN pip3 install -U --user six wheel mock
+RUN pip3 install -U --user six mock
 RUN pip3 install keras_preprocessing==1.1.0 --no-deps
 RUN pip3 install keras_applications==1.0.8 --no-deps
 RUN wget https://github.com/Qengineering/Tensorflow-Raspberry-Pi/raw/master/tensorflow-2.1.0-cp37-cp37m-linux_armv7l.whl
