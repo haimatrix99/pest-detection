@@ -80,7 +80,8 @@ class StreamImage:
         if self.verbose:
             try:
                 print("Response from external processing service: (" + str(response.status_code) + ") \n" + \
-                    json.dumps(response.json()["count"]))
+                    json.dumps(response.json()["created"]) + "\n" + json.dumps(response.json()["count"]))
+                    
             except Exception:
                 print("Response from external processing service (status code): " + str(response.status_code))
         return json.dumps(response.json(), cls=NumpyEncoder)
